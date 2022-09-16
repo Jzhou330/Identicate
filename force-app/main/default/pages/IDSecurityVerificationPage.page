@@ -1,0 +1,20 @@
+<apex:page standardStylesheets="true" showHeader="false">
+
+    <apex:includeLightning />
+    
+    <script>
+    $Lightning.use(
+        "c:IDSecurityVerificationApp",
+        function() {
+            $Lightning.createComponent(
+                "c:idSecurityVerification",
+                {identityId: {!$CurrentPage.parameters.id}},
+                "idSecurityVerificationId"
+            );
+        }
+    );
+    </script>
+    
+    <div id="idSecurityVerificationId"/>
+    
+</apex:page>

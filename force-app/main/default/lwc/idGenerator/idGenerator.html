@@ -1,0 +1,158 @@
+<template>
+    <section role="dialog" tabindex="-1" aria-labelledby="modal-heading-01" aria-modal="true" aria-describedby="modal-content-id-1" class="slds-fade-in-open">
+        <div class="slds-modal__container">
+
+            <template if:false={alreadyGeneratedId}>
+                <!-- Submit Info For Generated ID -->
+                <template if:false={generatedId}>
+                    <header class="slds-modal__header">
+                        <h2 class="slds-text-heading_medium slds-hyphenate">New Identity</h2>
+                    </header>
+                
+                    <div class="slds-modal__content slds-var-p-around_medium">
+                        <lightning-record-edit-form object-api-name="Identity__c" onsuccess={handleSuccess} onerror={handleError}>
+                            <lightning-input-field field-name="First_Name__c"></lightning-input-field>
+                            <lightning-input-field field-name="Last_Name__c"></lightning-input-field>
+                            <lightning-input-field field-name="Date_of_Birth__c"></lightning-input-field>
+                            <lightning-input-field field-name="Form_Identification_Number__c"></lightning-input-field>
+                            <lightning-input-field field-name="Social_Security_Number__c"></lightning-input-field>
+                            <lightning-input-field field-name="Address__c"></lightning-input-field>
+                            <lightning-input-field field-name="Phone_Number__c"></lightning-input-field>
+                            <lightning-input-field field-name="Email_Address__c"></lightning-input-field>
+                            <lightning-input-field field-name="Security_Question__c"></lightning-input-field>
+                            <lightning-input-field field-name="Security_Answer__c"></lightning-input-field>
+                            <div class="slds-var-m-top_medium">
+                                <lightning-input
+                                    type="file"
+                                    label="Attachment"
+                                    accept="image/*"
+                                    onclick={handleUpload}
+                                    onchange={handleUploadOnChange}
+                                    multiple
+                                    required
+                                >
+                                </lightning-input>
+                                <div class="slds-var-m-left_small">
+                                    {attachmentsCount} files attached
+                                </div>
+                            </div>
+                            <template if:true={errorMessage}>
+                                <div class="slds-var-m-top_medium slds-float_right" style="color: red; font-style: italic">
+                                    {errorMessage}
+                                </div>
+                                <br/>
+                                <br/>
+                            </template>
+                            <div class="slds-var-m-top_medium slds-float_right">
+                                <lightning-button variant="neutral" name="cancel" label="Cancel" onclick={handleExit}></lightning-button>
+
+                                <span class="slds-var-p-around_x-small">
+                                    <lightning-button variant="brand" type="submit" name="save" label="Submit" onclick={handleCreateIdentitySubmit}></lightning-button>
+                                </span>
+                            </div>
+                        </lightning-record-edit-form>
+                    </div>
+
+                    <footer class="slds-modal__footer">
+                        <div class="slds-var-m-top_medium slds-float_right">
+                            Already have a generated ID? Click <a href="javascript:void(0)" onclick={handleAlreadyGeneratedID}><u>here</u></a> to view your record
+                        </div>
+                    </footer>
+                </template>
+
+                <!-- After Submission For Generated ID -->
+                <template if:true={generatedId}>
+                    <header class="slds-modal__header">
+                        <h2 class="slds-text-heading_medium slds-hyphenate">New ID Generated</h2>
+                    </header>
+
+                    <div class="slds-modal__content slds-var-p-around_medium">
+                        <div class="slds-align_absolute-center">
+                            <b>Please check your email for instructions to retrieve your new generated ID</b>
+                        </div>
+                    </div>
+
+                    <footer class="slds-modal__footer">
+                        <div class="slds-var-m-top_medium slds-float_right">
+                            <lightning-button variant="neutral" name="exit" label="Exit" onclick={handleExit}></lightning-button>
+                        </div>
+                    </footer>
+                </template>
+            </template>
+
+            <template if:true={alreadyGeneratedId}>
+                <!-- Input Generated ID To View Record Details-->
+                <div class="slds-modal__content slds-var-p-around_medium">
+                    <template if:false={generatedId}>
+                        <lightning-input
+                            data-id="enterGeneratedID"
+                            type="text"
+                            label="Please enter your generated ID"
+                            required
+                        >
+                        </lightning-input>
+
+                        <div class="slds-var-m-top_medium slds-float_right">
+                            <lightning-button variant="brand" name="save" label="Submit" onclick={handleEnterGeneratedIDSubmit}></lightning-button>
+                        </div>
+                    </template>
+
+                    <!-- Record Details -->
+                    <template if:true={generatedId}>
+                        <header class="slds-modal__header">
+                            <h2 class="slds-text-heading_medium slds-hyphenate">Your Record</h2>
+                        </header>
+                        <template if:true={identityId}>
+                            <div class="slds-modal__content slds-var-p-around_medium">
+                                <lightning-record-view-form record-id={identityId} object-api-name="Identity__c">
+                                    <div class="slds-box">
+                                        <lightning-output-field field-name="First_Name__c"></lightning-output-field>
+                                        <lightning-output-field field-name="Last_Name__c"></lightning-output-field>
+                                        <lightning-output-field field-name="Date_of_Birth__c"></lightning-output-field>
+                                        <lightning-output-field field-name="Form_Identification_Number__c"></lightning-output-field>
+                                        <lightning-output-field field-name="Social_Security_Number__c"></lightning-output-field>
+                                        <lightning-output-field field-name="Address__c"></lightning-output-field>
+                                        <lightning-output-field field-name="Phone_Number__c"></lightning-output-field>
+                                        <lightning-output-field field-name="Email_Address__c"></lightning-output-field>
+                                        <lightning-output-field field-name="Security_Question__c"></lightning-output-field>
+                                        <lightning-output-field field-name="Security_Answer__c"></lightning-output-field>
+                                    </div>
+                                </lightning-record-view-form>
+
+                                <template if:true={imgURLs.length}>
+                                    <header class="slds-modal__header">
+                                        <h2 class="slds-text-heading_medium slds-hyphenate">Attachments</h2>
+                                    </header>
+                                    
+                                        <template for:each={imgURLs} for:item="url">
+                                            <div class="slds-var-p-around_medium" key={ur}>
+                                                <img src={url} class="slds-align_absolute-center" style="max-width:50%;max-height:50%;"/>
+                                            </div>
+                                        </template>
+                                </template>
+                            </div>
+
+                            <footer class="slds-modal__footer">
+                                <lightning-button variant="brand" name="exit" label="Exit" onclick={handleExit}></lightning-button>
+                            </footer>
+                        </template>
+
+                        <template if:false={identityId}>
+                            <div class="slds-var-p-around_medium">
+                                No records exist with generated ID: <b><i>{generatedId}</i></b>. Please try again.
+                            </div>
+
+                            <footer class="slds-modal__footer">
+                                <lightning-button variant="neutral" name="cancel" label="Cancel" onclick={handleExit}></lightning-button>
+
+                                <span class="slds-var-p-around_x-small">
+                                    <lightning-button variant="brand" name="retry" label="Retry" onclick={handleRetry}></lightning-button>
+                                </span>
+                            </footer>
+                        </template>
+                    </template>
+                </div>
+            </template>
+        </div>
+    </section>
+</template>
